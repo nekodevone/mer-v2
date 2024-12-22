@@ -5,6 +5,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using Exiled.API.Features.Items;
+
 namespace MapEditorReborn.Events.Handlers.Internal
 {
     using System.Linq;
@@ -47,7 +49,7 @@ namespace MapEditorReborn.Events.Handlers.Internal
                  mapObject != null))
                 return;
 
-            ev.Player.ShowHint(GetToolGunModeText(ev.Player, ev.Player.IsAimingDownWeapon, ev.NewState), 1f);
+            ev.Player.ShowHint(GetToolGunModeText(ev.Player, ev.Player.CurrentItem is Firearm firearm && firearm.Aiming, ev.NewState), 1f);
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnUnloadingWeapon(UnloadingWeaponEventArgs)"/>
@@ -77,7 +79,7 @@ namespace MapEditorReborn.Events.Handlers.Internal
 
             ev.Player.ClearBroadcasts();
             ev.Player.Broadcast(1,
-                !ev.Player.IsAimingDownWeapon && ev.Player.HasFlashlightModuleEnabled
+                !(ev.Player.CurrentItem is Firearm firearm && firearm.Aiming) && ev.Player.HasFlashlightModuleEnabled
                     ? $"{Translation.ModeCreating}\n<b>({mode})</b>"
                     : $"<b>{mode}</b>");
         }
@@ -89,9 +91,10 @@ namespace MapEditorReborn.Events.Handlers.Internal
                 return;
 
             ev.IsAllowed = false;
+            Firearm firearm = ev.Player.CurrentItem as Firearm;
 
             // Creating an object
-            if (ev.Player.HasFlashlightModuleEnabled && !ev.Player.IsAimingDownWeapon)
+            if (ev.Player.HasFlashlightModuleEnabled && !firearm.Aiming)
             {
                 Vector3 forward = ev.Player.CameraTransform.forward;
                 if (Physics.Raycast(ev.Player.CameraTransform.position + forward, forward, out RaycastHit hit, 100f))
@@ -129,7 +132,7 @@ namespace MapEditorReborn.Events.Handlers.Internal
             if (TryGetMapObject(ev.Player, out MapEditorObject mapObject))
             {
                 // Deleting the object
-                if (!ev.Player.HasFlashlightModuleEnabled && !ev.Player.IsAimingDownWeapon)
+                if (!ev.Player.HasFlashlightModuleEnabled && !firearm.Aiming)
                 {
                     DeleteObject(ev.Player, mapObject);
                     return;
@@ -137,14 +140,14 @@ namespace MapEditorReborn.Events.Handlers.Internal
             }
 
             // Copying to the ToolGun
-            if (!ev.Player.HasFlashlightModuleEnabled && ev.Player.IsAimingDownWeapon)
+            if (!ev.Player.HasFlashlightModuleEnabled && !firearm.Aiming)
             {
                 CopyObject(ev.Player, mapObject);
                 return;
             }
 
             // Selecting the object
-            if (ev.Player.HasFlashlightModuleEnabled && ev.Player.IsAimingDownWeapon)
+            if (ev.Player.HasFlashlightModuleEnabled && !firearm.Aiming)
             {
                 SelectObject(ev.Player, mapObject);
             }

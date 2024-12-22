@@ -57,6 +57,7 @@ namespace MapEditorReborn.API.Features.Objects
 
             Base = new(block);
             // Light.MovementSmoothing = 60;
+            Light.AdminToyBase.syncInterval = 0.1f;
 
             UpdateObject();
             IsStatic = true;
@@ -110,7 +111,7 @@ namespace MapEditorReborn.API.Features.Objects
                 Light.Color = GetColorFromString(Base.Color);
                 Light.Intensity = Base.Intensity;
                 Light.Range = Base.Range;
-                Light.ShadowEmission = Base.Shadows;
+                Light.Base.NetworkShadowType = Base.Shadows ? LightShadows.Soft : LightShadows.None;
             }
             else
             {
@@ -123,13 +124,13 @@ namespace MapEditorReborn.API.Features.Objects
             UpdateTransformProperties();
         }
 
-        /*
+
         private void LateUpdate()
         {
-            if (IsSchematicBlock)
-                UpdateTransformProperties();
+			_lightSourceToy.NetworkLightColor = _lightSourceToy._light.color;
+            _lightSourceToy.NetworkLightIntensity = _lightSourceToy._light.intensity;
+            _lightSourceToy.NetworkLightRange = _lightSourceToy._light.range;
         }
-        */
 
         private void UpdateTransformProperties()
         {

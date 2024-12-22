@@ -4,6 +4,9 @@
 // Licensed under the CC BY-SA 3.0 license.
 // </copyright>
 // -----------------------------------------------------------------------
+
+using AdminToys;
+
 namespace MapEditorReborn.API
 {
     using System.Collections.Generic;
@@ -118,22 +121,44 @@ namespace MapEditorReborn.API
         internal static void GetObjectPrefabs()
         {
             Dictionary<ObjectType, GameObject> objectList = new(21);
-            DoorSpawnpoint[] doorList = Object.FindObjectsOfType<DoorSpawnpoint>();
+            //DoorSpawnpoint[] doorList = Object.FindObjectsOfType<DoorSpawnpoint>();
 
-            objectList.Add(ObjectType.LczDoor, doorList.First(x => x.TargetPrefab.name.Contains("LCZ")).TargetPrefab.gameObject);
-            objectList.Add(ObjectType.HczDoor, doorList.First(x => x.TargetPrefab.name.Contains("HCZ")).TargetPrefab.gameObject);
-            objectList.Add(ObjectType.EzDoor, doorList.First(x => x.TargetPrefab.name.Contains("EZ")).TargetPrefab.gameObject);
+            objectList.Add(ObjectType.LczDoor, NetworkClient.prefabs.Values.First(x => x.name.Contains("LCZ")));
+            objectList.Add(ObjectType.HczDoor, NetworkClient.prefabs.Values.First(x => x.name.Contains("HCZ")));
+            objectList.Add(ObjectType.EzDoor, NetworkClient.prefabs.Values.First(x => x.name.Contains("EZ")));
 
             objectList.Add(ObjectType.WorkStation, NetworkClient.prefabs.Values.First(x => x.name.Contains("Work Station")));
 
             objectList.Add(ObjectType.ItemSpawnPoint, new GameObject("ItemSpawnPointObject"));
 
-            objectList.Add(ObjectType.SportShootingTarget, ToysHelper.SportShootingTargetObject.gameObject);
-            objectList.Add(ObjectType.DboyShootingTarget, ToysHelper.DboyShootingTargetObject.gameObject);
-            objectList.Add(ObjectType.BinaryShootingTarget, ToysHelper.BinaryShootingTargetObject.gameObject);
-
-            objectList.Add(ObjectType.Primitive, ToysHelper.PrimitiveBaseObject.gameObject);
-            objectList.Add(ObjectType.LightSource, ToysHelper.LightBaseObject.gameObject);
+            foreach (GameObject gameObject in NetworkClient.prefabs.Values)
+            {
+                if (gameObject.TryGetComponent(out PrimitiveObjectToy _))
+                {
+                    objectList.Add(ObjectType.Primitive, gameObject);
+                    continue;
+                }
+                if (gameObject.TryGetComponent(out LightSourceToy _))
+                {
+                    objectList.Add(ObjectType.LightSource, gameObject);
+                    continue;
+                }
+                if (gameObject.TryGetComponent(out ShootingTarget _))
+                {
+                    switch (gameObject.name)
+                    {
+                        case "sportTargetPrefab":
+                            objectList.Add(ObjectType.SportShootingTarget, gameObject);
+                            continue;
+                        case "dboyTargetPrefab":
+                            objectList.Add(ObjectType.DboyShootingTarget, gameObject);
+                            continue;
+                        case "binaryTargetPrefab":
+                            objectList.Add(ObjectType.BinaryShootingTarget, gameObject);
+                            continue;
+                    }
+                }
+            }
 
             objectList.Add(ObjectType.RoomLight, new GameObject("LightControllerObject"));
 
